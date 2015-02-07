@@ -1,0 +1,12 @@
+[package]
+
+name = "ringmod"
+version = "0.0.1"
+authors = ["Noah Weninger <nweninge@ualberta.ca>"]
+
+[dependencies.ladspa]
+path = "../../"
+
+[lib]
+name = "ringmod"
+crate-type = ["dylib"]

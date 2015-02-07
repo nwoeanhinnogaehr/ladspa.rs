@@ -1,0 +1,16 @@
+[package]
+
+name = "ladspa"
+version = "0.1.0"
+authors = ["Noah Weninger <nweninge@ualberta.ca>"]
+description = "An interface for writing LADSPA plugins safely in Rust."
+repository = "https://github.com/nwoeanhinnogaehr/ladspa.rs"
+license = "Unlicense"
+keywords = ["audio", "ladspa", "dsp"]
+
+[dependencies]
+bitflags = "*"
+
+[lib]
+name = "ladspa"
+crate-type = ["rlib"]
