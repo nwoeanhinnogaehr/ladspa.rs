@@ -109,24 +109,24 @@ pub struct PluginDescriptor {
 /// Represents an input or output to the plugin representing either audio or
 /// control data.
 pub struct Port {
-    /// The name of the port. For control ports, this will be shown by the host in an automatically
-    /// generated GUI next to the control. For audio ports, it is mostly just for identification
-    /// in your code but some hosts may display it.
+    /// The name of the port. For control ports, this will likely be shown by the host in an
+    /// automatically generated GUI next to the control. For audio ports, it is mostly just
+    /// for identification in your code but some hosts may display it.
     pub name: &'static str,
 
     /// Describes the type of port: audio or control, input or output.
     pub desc: PortDescriptor,
 
-    /// Only applies to control ports.
+    /// Most useful on control inputs but can be used on any type of port.
     pub hint: Option<ControlHint>,
 
-    /// Only applies to control ports.
+    /// Most useful on control inputs but can be used on any type of port.
     pub default: Option<DefaultValue>,
 
-    /// The lower bound of values to accepted by default.
+    /// The lower bound of values to accepted by default (the host may ignore this).
     pub lower_bound: Option<Data>,
 
-    /// The upper bound of values to accepted by default.
+    /// The upper bound of values to accepted by default (the host may ignore this).
     pub upper_bound: Option<Data>,
 }
 
