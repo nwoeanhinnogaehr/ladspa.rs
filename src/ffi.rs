@@ -50,13 +50,6 @@ mod ladspa {
     }
 }
 
-// The handle that is given to ladspa.
-struct Handle<'a> {
-    descriptor: &'static super::PluginDescriptor,
-    plugin: Box<super::Plugin + 'static>,
-    ports: VecMap<super::PortConnection<'a>>,
-}
-
 unsafe fn alloc<T>(num: u64) -> *mut T {
     let ptr: *mut T = mem::transmute(libc::malloc(num * mem::size_of::<T>() as u64));
     if ptr == ptr::null_mut() {
@@ -199,17 +192,27 @@ unsafe fn free_descriptor(ptr: *mut ladspa::Descriptor) {
     free(ptr);
 }
 
+// The handle that is given to ladspa.
+struct Handle<'a> {
+    descriptor: &'static super::PluginDescriptor,
+    plugin: Box<super::Plugin + 'static>,
+    port_map: VecMap<super::PortConnection<'a>>,
+    ports: Vec<&'a super::PortConnection<'a>>,
+}
+
 extern "C" fn instantiate(descriptor: *const ladspa::Descriptor, sample_rate: u64) -> ladspa::Handle {
     unsafe {
         let desc: &mut ladspa::Descriptor = mem::transmute(descriptor);
 
         let rust_desc: &super::PluginDescriptor = mem::transmute(desc.implementation_data);
         let rust_plugin = (rust_desc.new)(rust_desc, sample_rate);
-        let ports: Vec<super::PortConnection> = Vec::new();
+        let port_map: VecMap<super::PortConnection> = VecMap::new();
+        let ports: Vec<&super::PortConnection> = Vec::new();
 
         let heap_handle: *mut Handle = alloc::<Handle>(1);
         ptr::write(mem::transmute(&(*heap_handle).descriptor), rust_desc);
         ptr::write(mem::transmute(&(*heap_handle).plugin), rust_plugin);
+        ptr::write(mem::transmute(&(*heap_handle).port_map), port_map);
         ptr::write(mem::transmute(&(*heap_handle).ports), ports);
         mem::transmute(heap_handle)
     }
@@ -243,14 +246,20 @@ extern "C" fn connect_port(instance: ladspa::Handle, port_num: usize, data_locat
             port: port,
             data: data,
         };
-        handle.ports.insert(port_num, conn);
+        handle.port_map.insert(port_num, conn);
+
+        // Depends on the assumption that ports will be recreated whenever port_map changes
+        let handle_ptr: *mut Handle = mem::transmute(instance);
+        if handle.port_map.len() == handle.descriptor.ports.len() {
+            (*handle_ptr).ports = (0..handle.port_map.len()).map(|i| &handle.port_map[i]).collect();
+        }
     }
 }
 
 extern "C" fn run(instance: ladspa::Handle, sample_count: u64) {
     unsafe {
-        let handle: *mut Handle = mem::transmute(instance);
-        for (_, port) in (*handle).ports.iter_mut() {
+        let handle: &mut Handle = mem::transmute(instance);
+        for (_, port) in handle.port_map.iter_mut() {
             match port.data {
                 super::PortData::AudioOutput(ref mut data) => {
                     let ptr = mem::transmute(data.borrow().as_ptr());
@@ -263,9 +272,7 @@ extern "C" fn run(instance: ladspa::Handle, sample_count: u64) {
                 _ => { }
             }
         }
-        let ports: Vec<&super::PortConnection> =
-            (0..(*handle).ports.len()).map(|i| &(*handle).ports[i]).collect();
-        (*handle).plugin.run(sample_count as usize, ports.as_slice());
+        handle.plugin.run(sample_count as usize, handle.ports.as_slice());
     }
 }
 
