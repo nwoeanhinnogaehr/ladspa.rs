@@ -3,6 +3,7 @@
 extern crate ladspa;
 
 use ladspa::{PluginDescriptor, PortDescriptor, Port, DefaultValue, Data, Plugin, PortConnection};
+use std::default::Default;
 
 const MAX_DELAY: Data = 2.0;
 
@@ -72,34 +73,22 @@ pub extern fn get_ladspa_descriptor(index: u64) -> Option<PluginDescriptor> {
                     Port {
                         name: "Left Audio In",
                         desc: PortDescriptor::AudioInput,
-                        hint: None,
-                        default: None,
-                        lower_bound: None,
-                        upper_bound: None,
+                        ..Default::default()
                     },
                     Port {
                         name: "Right Audio In",
                         desc: PortDescriptor::AudioInput,
-                        hint: None,
-                        default: None,
-                        lower_bound: None,
-                        upper_bound: None,
+                        ..Default::default()
                     },
                     Port {
                         name: "Left Audio Out",
                         desc: PortDescriptor::AudioOutput,
-                        hint: None,
-                        default: None,
-                        lower_bound: None,
-                        upper_bound: None,
+                        ..Default::default()
                     },
                     Port {
                         name: "Right Audio Out",
                         desc: PortDescriptor::AudioOutput,
-                        hint: None,
-                        default: None,
-                        lower_bound: None,
-                        upper_bound: None,
+                        ..Default::default()
                     },
                     Port {
                         name: "Left Delay (seconds)",

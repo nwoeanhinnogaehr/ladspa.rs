@@ -46,6 +46,7 @@ mod ffi;
 pub use ffi::ladspa_descriptor;
 
 use std::cell::{RefCell, RefMut};
+use std::default::Default;
 
 #[allow(improper_ctypes)]
 extern {
@@ -107,7 +108,7 @@ pub struct PluginDescriptor {
     pub new: fn(desc: &PluginDescriptor, sample_rate: u64) -> Box<Plugin>,
 }
 
-#[derive(Copy)]
+#[derive(Copy, Default)]
 /// Represents an input or output to the plugin representing either audio or
 /// control data.
 pub struct Port {
@@ -135,10 +136,17 @@ pub struct Port {
 #[derive(Copy)]
 /// Represents the 4 types of ports: audio or control, input or output.
 pub enum PortDescriptor {
+    Invalid = 0,
     AudioInput = 8 | 1,
     AudioOutput = 8 | 2,
     ControlInput = 4 | 1,
     ControlOutput = 4 | 2,
+}
+
+impl Default for PortDescriptor {
+    fn default() -> PortDescriptor {
+        PortDescriptor::Invalid
+    }
 }
 
 bitflags!(

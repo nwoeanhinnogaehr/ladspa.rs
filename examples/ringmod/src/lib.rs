@@ -3,6 +3,7 @@ pub extern crate ladspa;
 
 use ladspa::{Plugin, PluginDescriptor, Port, PortConnection, Data};
 use std::num::Float;
+use std::default::Default;
 
 struct RingMod {
     time: u64,
@@ -48,17 +49,11 @@ pub extern fn get_ladspa_descriptor(index: u64) -> Option<PluginDescriptor> {
                 ports: vec![Port {
                     name: "Audio In",
                     desc: ladspa::PortDescriptor::AudioInput,
-                    hint: None,
-                    default: None,
-                    lower_bound: None,
-                    upper_bound: None,
+                    .. Default::default()
                 }, Port {
                     name: "Audio Out",
                     desc: ladspa::PortDescriptor::AudioOutput,
-                    hint: None,
-                    default: None,
-                    lower_bound: None,
-                    upper_bound: None,
+                    .. Default::default()
                 }, Port {
                     name: "Frequency",
                     desc: ladspa::PortDescriptor::ControlInput,

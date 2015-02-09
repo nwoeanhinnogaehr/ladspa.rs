@@ -240,6 +240,7 @@ extern "C" fn connect_port(instance: ladspa::Handle, port_num: usize, data_locat
             super::PortDescriptor::ControlOutput => {
                 super::PortData::ControlOutput(RefCell::new(mem::transmute(data_location)))
             },
+            super::PortDescriptor::Invalid => panic!("Invalid port descriptor!"),
         };
 
         let conn = super::PortConnection {
