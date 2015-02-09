@@ -26,7 +26,9 @@
  * You'll want to implement
  * ```get_ladspa_descriptor``` in your src/lib.rs. This function is expected to return 1 or more
  * ```PluginDescriptor```s describing the plugins exposed by your library. See the documentation
- * for ```get_ladspa_descriptor``` and the examples [on Github](dead_link) for more information.
+ * for ```get_ladspa_descriptor``` and the examples
+ * [on Github](https://github.com/nwoeanhinnogaehr/ladspa.rs/tree/master/examples) for more
+ * information.
  *
  * ## Testing it out
  * There is a list of host software supporting LADSPA on the
