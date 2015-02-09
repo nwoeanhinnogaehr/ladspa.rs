@@ -1,3 +1,5 @@
 /target
 examples/*/target
 *.swp
+Cargo.lock
+examples/*/Cargo.lock
