@@ -229,11 +229,11 @@ extern "C" fn connect_port(instance: ladspa::Handle, port_num: u64, data_locatio
         let data = match port.desc {
             super::PortDescriptor::AudioInput => {
                 super::PortData::AudioInput( // Initially create a size 0 slice because we don't know how big
-                    slice::from_raw_parts(mem::transmute(data_location), 0)) // it will be yet.
+                    slice::from_raw_parts(data_location, 0)) // it will be yet.
             },
             super::PortDescriptor::AudioOutput => {
                 super::PortData::AudioOutput(RefCell::new( // Same here.
-                    slice::from_raw_parts_mut(mem::transmute(data_location), 0)))
+                    slice::from_raw_parts_mut(data_location, 0)))
             },
             super::PortDescriptor::ControlInput => {
                 super::PortData::ControlInput(mem::transmute(data_location))
@@ -264,11 +264,11 @@ extern "C" fn run(instance: ladspa::Handle, sample_count: u64) {
         for (_, port) in handle.port_map.iter_mut() {
             match port.data {
                 super::PortData::AudioOutput(ref mut data) => {
-                    let ptr = mem::transmute(data.borrow().as_ptr());
+                    let ptr = data.borrow_mut().as_mut_ptr();
                     *data.borrow_mut() = slice::from_raw_parts_mut(ptr, sample_count as usize);
                 },
                 super::PortData::AudioInput(ref mut data) => {
-                    let ptr = mem::transmute(data.as_ptr());
+                    let ptr = data.as_ptr();
                     *data = slice::from_raw_parts(ptr, sample_count as usize);
                 },
                 _ => { }
