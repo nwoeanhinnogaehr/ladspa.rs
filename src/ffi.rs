@@ -40,7 +40,7 @@ mod ladspa {
         pub port_range_hints: *mut PortRangeHint,
         pub implementation_data: *mut c_void,
         pub instantiate: extern "C" fn(descriptor: *const Descriptor, sample_rate: u64) -> Handle,
-        pub connect_port: extern "C" fn(instance: Handle, port: usize, data_location: *mut Data),
+        pub connect_port: extern "C" fn(instance: Handle, port: u64, data_location: *mut Data),
         pub activate: extern "C" fn(instance: Handle),
         pub run: extern "C" fn(instance: Handle, sample_count: u64),
         pub run_adding: extern "C" fn(instance: Handle, sample_count: u64),
@@ -218,11 +218,11 @@ extern "C" fn instantiate(descriptor: *const ladspa::Descriptor, sample_rate: u6
     }
 }
 
-extern "C" fn connect_port(instance: ladspa::Handle, port_num: usize, data_location: *mut ladspa::Data) {
+extern "C" fn connect_port(instance: ladspa::Handle, port_num: u64, data_location: *mut ladspa::Data) {
     unsafe {
         let handle: &mut Handle = mem::transmute(instance);
 
-        let port = handle.descriptor.ports[port_num];
+        let port = handle.descriptor.ports[port_num as usize];
 
         // Create appropriate pointers to port data. Mutable locations are wrapped in refcells.
         let data = match port.desc {
@@ -247,7 +247,7 @@ extern "C" fn connect_port(instance: ladspa::Handle, port_num: usize, data_locat
             port: port,
             data: data,
         };
-        handle.port_map.insert(port_num, conn);
+        handle.port_map.insert(port_num as usize, conn);
 
         // Depends on the assumption that ports will be recreated whenever port_map changes
         let handle_ptr: *mut Handle = mem::transmute(instance);
