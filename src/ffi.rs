@@ -142,8 +142,9 @@ pub unsafe extern "C" fn ladspa_descriptor(index: u64) -> *mut ladspa::Descripto
             desc.connect_port = connect_port;
             desc.run = run;
             desc.cleanup = cleanup;
-            //desc.run_adding = run_adding;
-            //desc.set_run_adding_gain = set_run_adding_gain;
+            // u8 is arbitrary, just need some type here
+            desc.run_adding = mem::transmute(ptr::null::<*const u8>());
+            desc.set_run_adding_gain = mem::transmute(ptr::null::<*const u8>());
             desc.activate = activate;
             desc.deactivate = deactivate;
 
