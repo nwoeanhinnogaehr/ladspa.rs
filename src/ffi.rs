@@ -210,12 +210,12 @@ extern "C" fn instantiate(descriptor: *const ladspa::Descriptor, sample_rate: u6
         let port_map: VecMap<super::PortConnection> = VecMap::new();
         let ports: Vec<&super::PortConnection> = Vec::new();
 
-        let heap_handle: *mut Handle = alloc::<Handle>(1);
-        ptr::write(mem::transmute(&(*heap_handle).descriptor), rust_desc);
-        ptr::write(mem::transmute(&(*heap_handle).plugin), rust_plugin);
-        ptr::write(mem::transmute(&(*heap_handle).port_map), port_map);
-        ptr::write(mem::transmute(&(*heap_handle).ports), ports);
-        mem::transmute(heap_handle)
+        let handle: &mut Handle = mem::transmute(alloc::<Handle>(1));
+        ptr::write(mem::transmute(&handle.descriptor), rust_desc);
+        ptr::write(mem::transmute(&handle.plugin), rust_plugin);
+        ptr::write(mem::transmute(&handle.port_map), port_map);
+        ptr::write(mem::transmute(&handle.ports), ports);
+        mem::transmute(handle)
     }
 }
 
