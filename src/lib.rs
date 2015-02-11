@@ -45,6 +45,8 @@ mod ffi;
 
 pub use ffi::ladspa_descriptor;
 
+use ffi::ladspa;
+
 use std::cell::{RefCell, RefMut};
 use std::default::Default;
 
@@ -137,10 +139,10 @@ pub struct Port {
 /// Represents the 4 types of ports: audio or control, input or output.
 pub enum PortDescriptor {
     Invalid = 0,
-    AudioInput = 8 | 1,
-    AudioOutput = 8 | 2,
-    ControlInput = 4 | 1,
-    ControlOutput = 4 | 2,
+    AudioInput = (ladspa::PORT_AUDIO | ladspa::PORT_INPUT) as isize,
+    AudioOutput = (ladspa::PORT_AUDIO | ladspa::PORT_OUTPUT) as isize,
+    ControlInput = (ladspa::PORT_CONTROL | ladspa::PORT_INPUT) as isize,
+    ControlOutput = (ladspa::PORT_CONTROL | ladspa::PORT_OUTPUT) as isize,
 }
 
 impl Default for PortDescriptor {
@@ -157,21 +159,21 @@ bitflags!(
     flags ControlHint: i32 {
         #[doc="Indicates that this is a toggled port. Toggled ports may only have default values
         of zero or one, although the host may send any value, where <= 0 is false and > 0 is true."]
-        const HINT_TOGGLED = 0x4,
+        const HINT_TOGGLED = ladspa::HINT_TOGGLED,
 
         #[doc="Indicates that all values related to the port will be multiplied by the sample rate by
         the host before passing them to your plugin. This includes the lower and upper bounds. If you
         want an upper bound of 22050 with this property and a sample rate of 44100, set the upper bound
         to 0.5"]
-        const HINT_SAMPLE_RATE = 0x8,
+        const HINT_SAMPLE_RATE = ladspa::HINT_SAMPLE_RATE,
 
         #[doc="Indicates that the data passed through this port would be better represented on a
         logarithmic scale"]
-        const HINT_LOGARITHMIC = 0x10,
+        const HINT_LOGARITHMIC = ladspa::HINT_LOGARITHMIC,
 
         #[doc="Indicates that the data passed through this port should be represented as integers. Bounds
         may be interpreted exclusively depending on the host"]
-        const HINT_INTEGER = 0x20,
+        const HINT_INTEGER = ladspa::HINT_INTEGER,
     }
 );
 
@@ -179,34 +181,34 @@ bitflags!(
 /// The default values that a control port may hold. For audio ports, use DefaultControlValue::None.
 pub enum DefaultValue {
     /// Equal to the ```lower_bound``` of the ```Port```.
-    Minimum = 0x40,
+    Minimum = ladspa::HINT_DEFAULT_MINIMUM as isize,
     /// For ports with
     /// ```LADSPA_HINT_LOGARITHMIC```, this should be ```exp(log(lower_bound) * 0.75 +
     /// log(upper_bound) * 0.25)```. Otherwise, this should be ```(lower_bound * 0.75 +
     /// upper_bound * 0.25)```.
-    Low = 0x80,
+    Low = ladspa::HINT_DEFAULT_LOW as isize,
     /// For ports with
     /// ```CONTROL_HINT_LOGARITHMIC```, this should be ```exp(log(lower_bound) * 0.5 +
     /// log(upper_bound) * 0.5)```. Otherwise, this should be ```(lower_bound * 0.5 +
     /// upper_bound * 0.5)```.
-    Middle = 0xC0,
+    Middle = ladspa::HINT_DEFAULT_MIDDLE as isize,
     /// For ports with
     /// ```LADSPA_HINT_LOGARITHMIC```, this should be ```exp(log(lower_bound) * 0.25 +
     /// log(upper_bound) * 0.75)```. Otherwise, this should be ```(lower_bound * 0.25 +
     /// upper_bound * 0.75)```.
-    High = 0x100,
+    High = ladspa::HINT_DEFAULT_HIGH as isize,
     /// Equal to the ```upper_bound``` of the ```Port```.
-    Maximum = 0x140,
+    Maximum = ladspa::HINT_DEFAULT_MAXIMUM as isize,
 
     /// Equal to 0 or false for toggled values.
-    Value0 = 0x200,
+    Value0 = ladspa::HINT_DEFAULT_0 as isize,
     /// Equal to 1 or true for toggled values.
-    Value1 = 0x240,
+    Value1 = ladspa::HINT_DEFAULT_1 as isize,
     /// Equal to 100.
-    Value100 = 0x280,
+    Value100 = ladspa::HINT_DEFAULT_100 as isize,
     /// Equal to 440, concert A. This may be off by a few Hz if the host is using an alternate
     /// tuning.
-    Value440 = 0x2C0,
+    Value440 = ladspa::HINT_DEFAULT_440 as isize,
 }
 
 /// Represents a connection between a port and the data attached to the port by the plugin
@@ -281,14 +283,14 @@ bitflags!(
         const PROP_NONE = 0,
 
         #[doc="Indicates that the plugin has a realtime dependency so it's output may not be cached."]
-        const PROP_REALTIME = 1,
+        const PROP_REALTIME = ladspa::PROPERTY_REALTIME,
 
         #[doc="Indicates that the plugin will not function correctly if the input and output audio
         data has the same memory location. This could be an issue if you copy input to output
         then refer back to previous values of the input as they will be overwritten. It is
         recommended that you avoid using this flag if possible as it can decrease the speed of
         the plugin."]
-        const PROP_INPLACE_BROKEN = 2,
+        const PROP_INPLACE_BROKEN = ladspa::PROPERTY_INPLACE_BROKEN,
 
         #[doc="Indicates that the plugin is capable of running not only in a conventional host but
         also in a 'hard real-time' environment. To qualify for this the plugin must
@@ -313,7 +315,7 @@ bitflags!(
         may not depend on input signals or plugin state. The host is left
         the responsibility to perform timings to estimate upper bounds for
         A and B."]
-        const PROP_HARD_REALTIME_CAPABLE = 4,
+        const PROP_HARD_REALTIME_CAPABLE = ladspa::PROPERTY_HARD_RT_CAPABLE,
     }
 );
 

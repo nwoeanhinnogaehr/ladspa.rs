@@ -7,7 +7,7 @@ use std::collections::VecMap;
 use super::get_ladspa_descriptor;
 
 // essentially ladspa.h API translated to rust.
-mod ladspa {
+pub mod ladspa {
     use libc::{c_void, c_char};
 
     pub type Data = f32;
@@ -48,6 +48,31 @@ mod ladspa {
         pub deactivate: extern "C" fn(instance: Handle),
         pub cleanup: extern "C" fn(instance: Handle),
     }
+
+    pub const PROPERTY_REALTIME: Properties = 0x1;
+    pub const PROPERTY_INPLACE_BROKEN: Properties = 0x2;
+    pub const PROPERTY_HARD_RT_CAPABLE: Properties = 0x4;
+
+    pub const PORT_INPUT: PortDescriptor = 0x1;
+    pub const PORT_OUTPUT: PortDescriptor = 0x2;
+    pub const PORT_CONTROL: PortDescriptor = 0x4;
+    pub const PORT_AUDIO: PortDescriptor = 0x8;
+
+    pub const HINT_BOUNDED_BELOW: PortRangeHintDescriptor = 0x1;
+    pub const HINT_BOUNDED_ABOVE: PortRangeHintDescriptor = 0x2;
+    pub const HINT_TOGGLED: PortRangeHintDescriptor = 0x4;
+    pub const HINT_SAMPLE_RATE: PortRangeHintDescriptor = 0x8;
+    pub const HINT_LOGARITHMIC: PortRangeHintDescriptor = 0x10;
+    pub const HINT_INTEGER: PortRangeHintDescriptor = 0x20;
+    pub const HINT_DEFAULT_MINIMUM: PortRangeHintDescriptor = 0x40;
+    pub const HINT_DEFAULT_LOW: PortRangeHintDescriptor = 0x80;
+    pub const HINT_DEFAULT_MIDDLE: PortRangeHintDescriptor = 0xC0;
+    pub const HINT_DEFAULT_HIGH: PortRangeHintDescriptor = 0x100;
+    pub const HINT_DEFAULT_MAXIMUM: PortRangeHintDescriptor = 0x140;
+    pub const HINT_DEFAULT_0: PortRangeHintDescriptor = 0x200;
+    pub const HINT_DEFAULT_1: PortRangeHintDescriptor = 0x240;
+    pub const HINT_DEFAULT_100: PortRangeHintDescriptor = 0x280;
+    pub const HINT_DEFAULT_440: PortRangeHintDescriptor = 0x2C0;
 }
 
 unsafe fn alloc<T>(num: u64) -> *mut T {
@@ -125,8 +150,8 @@ pub unsafe extern "C" fn ladspa_descriptor(index: u64) -> *mut ladspa::Descripto
                     = ladspa::PortRangeHint {
                         hint_descriptor: port.hint.map(|x| x.bits()).unwrap_or(0) |
                             port.default.map(|x| x as i32).unwrap_or(0) |
-                            port.lower_bound.map(|_| 1).unwrap_or(0) |
-                            port.upper_bound.map(|_| 2).unwrap_or(0),
+                            port.lower_bound.map(|_| ladspa::HINT_BOUNDED_BELOW).unwrap_or(0) |
+                            port.upper_bound.map(|_| ladspa::HINT_BOUNDED_ABOVE).unwrap_or(0),
                         lower_bound: port.lower_bound.unwrap_or(0_f32),
                         upper_bound: port.upper_bound.unwrap_or(0_f32),
                     };
