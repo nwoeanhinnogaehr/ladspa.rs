@@ -1,7 +1,7 @@
 [package]
 
 name = "ladspa"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["Noah Weninger <nweninge@ualberta.ca>"]
 description = "An interface for writing LADSPA plugins safely in Rust."
 documentation = "http://deadmau6.com/doc/ladspa/"
