@@ -107,7 +107,7 @@ unsafe fn _lto_workaround() {
 }
 
 #[no_mangle]
-/// This is exported so that your plugin is recognised by LADSPA hosts. Don't worry about it.
+// Exported so the plugin is recognised by ladspa hosts.
 pub unsafe extern "C" fn ladspa_descriptor(index: u64) -> *mut ladspa::Descriptor {
     if !init_done {
         libc::atexit(global_destruct);

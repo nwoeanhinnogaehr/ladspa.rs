@@ -41,8 +41,10 @@
 extern crate libc;
 #[macro_use] extern crate bitflags;
 
-mod ffi;
+#[doc(hidden)]
+pub mod ffi;
 
+#[doc(hidden)]
 pub use ffi::ladspa_descriptor;
 
 use ffi::ladspa;
