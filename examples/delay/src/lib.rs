@@ -1,11 +1,11 @@
-#![feature(collections, core)]
+#![feature(collections)]
 
 extern crate ladspa;
 
 use ladspa::{PluginDescriptor, PortDescriptor, Port, DefaultValue, Data, Plugin, PortConnection};
 use std::default::Default;
 
-const MAX_DELAY: Data = 2.0;
+const MAX_DELAY: Data = 5.0;
 
 struct Delay {
     sample_rate: Data,
@@ -59,7 +59,7 @@ impl Plugin for Delay {
 }
 
 #[no_mangle]
-pub extern fn get_ladspa_descriptor(index: u64) -> Option<PluginDescriptor> {
+pub fn get_ladspa_descriptor(index: u64) -> Option<PluginDescriptor> {
     match index {
         0 => {
             Some(PluginDescriptor {

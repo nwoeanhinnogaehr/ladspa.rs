@@ -299,7 +299,7 @@ extern "C" fn run(instance: ladspa::Handle, sample_count: u64) {
                 _ => { }
             }
         }
-        handle.plugin.run(sample_count as usize, handle.ports.as_slice());
+        handle.plugin.run(sample_count as usize, &handle.ports);
     }
 }
 

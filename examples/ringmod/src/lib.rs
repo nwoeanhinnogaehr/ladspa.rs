@@ -1,4 +1,3 @@
-#![feature(core)]
 pub extern crate ladspa;
 
 use ladspa::{Plugin, PluginDescriptor, Port, PortConnection, Data};
