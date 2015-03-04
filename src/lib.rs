@@ -1,4 +1,4 @@
-#![feature(libc, collections, hash, core)]
+#![feature(libc, collections, core)]
 
 /*!
  * The ```ladspa``` crate provides an interface for writing [LADSPA](http://www.ladspa.org/)
