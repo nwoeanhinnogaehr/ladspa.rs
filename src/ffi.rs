@@ -41,11 +41,11 @@ pub mod ladspa {
         pub implementation_data: *mut c_void,
         pub instantiate: extern "C" fn(descriptor: *const Descriptor, sample_rate: u64) -> Handle,
         pub connect_port: extern "C" fn(instance: Handle, port: u64, data_location: *mut Data),
-        pub activate: extern "C" fn(instance: Handle),
+        pub activate: Option<extern "C" fn(instance: Handle)>,
         pub run: extern "C" fn(instance: Handle, sample_count: u64),
-        pub run_adding: extern "C" fn(instance: Handle, sample_count: u64),
-        pub set_run_adding_gain: extern "C" fn(instance: Handle, gain: Data),
-        pub deactivate: extern "C" fn(instance: Handle),
+        pub run_adding: Option<extern "C" fn(instance: Handle, sample_count: u64)>,
+        pub set_run_adding_gain: Option<extern "C" fn(instance: Handle, gain: Data)>,
+        pub deactivate: Option<extern "C" fn(instance: Handle)>,
         pub cleanup: extern "C" fn(instance: Handle),
     }
 
@@ -167,11 +167,10 @@ pub unsafe extern "C" fn ladspa_descriptor(index: u64) -> *mut ladspa::Descripto
             desc.connect_port = connect_port;
             desc.run = run;
             desc.cleanup = cleanup;
-            // u8 is arbitrary, just need some type here
-            desc.run_adding = mem::transmute(ptr::null::<*const u8>());
-            desc.set_run_adding_gain = mem::transmute(ptr::null::<*const u8>());
-            desc.activate = activate;
-            desc.deactivate = deactivate;
+            desc.run_adding = None;
+            desc.set_run_adding_gain = None;
+            desc.activate = Some(activate);
+            desc.deactivate = Some(deactivate);
 
             // store in global descriptor table
             let ptr = mem::transmute(desc);
