@@ -1,4 +1,4 @@
-#![feature(libc, collections, core)]
+#![feature(libc, collections)]
 
 /*!
  * The ```ladspa``` crate provides an interface for writing [LADSPA](http://www.ladspa.org/)
@@ -110,7 +110,7 @@ pub struct PluginDescriptor {
     pub new: fn(desc: &PluginDescriptor, sample_rate: u64) -> Box<Plugin>,
 }
 
-#[derive(Copy, Default)]
+#[derive(Copy, Clone, Default)]
 /// Represents an input or output to the plugin representing either audio or
 /// control data.
 pub struct Port {
@@ -135,7 +135,7 @@ pub struct Port {
     pub upper_bound: Option<Data>,
 }
 
-#[derive(Copy)]
+#[derive(Copy, Clone)]
 /// Represents the 4 types of ports: audio or control, input or output.
 pub enum PortDescriptor {
     Invalid = 0,
@@ -177,7 +177,7 @@ bitflags!(
     }
 );
 
-#[derive(Copy)]
+#[derive(Copy, Clone)]
 /// The default values that a control port may hold. For audio ports, use DefaultControlValue::None.
 pub enum DefaultValue {
     /// Equal to the ```lower_bound``` of the ```Port```.

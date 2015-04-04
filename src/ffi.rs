@@ -18,7 +18,7 @@ pub mod ladspa {
     pub type Handle = *mut c_void;
 
     #[repr(C)]
-    #[derive(Copy)]
+    #[derive(Copy, Clone)]
     pub struct PortRangeHint {
         pub hint_descriptor: PortRangeHintDescriptor,
         pub lower_bound: Data,

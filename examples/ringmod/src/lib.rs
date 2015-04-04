@@ -1,7 +1,6 @@
 pub extern crate ladspa;
 
 use ladspa::{Plugin, PluginDescriptor, Port, PortConnection, Data};
-use std::num::Float;
 use std::default::Default;
 
 struct RingMod {
