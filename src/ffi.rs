@@ -89,7 +89,7 @@ unsafe fn free<T>(x: *const T) {
 
 unsafe fn make_c_str(s: &'static str) -> *const c_char {
     let c_str: *mut c_char = alloc::<c_char>(s.len() as u64 + 1);
-    ptr::copy(c_str, mem::transmute(s.as_ptr()), s.len());
+    ptr::copy(mem::transmute(s.as_ptr()), c_str, s.len());
     slice::from_raw_parts_mut(c_str, s.len() + 1)[s.len()] = 0; // add the null terminator
     c_str
 }
