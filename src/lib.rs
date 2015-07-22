@@ -1,4 +1,4 @@
-#![feature(libc, collections)]
+#![feature(libc, vecmap, cstr_memory)]
 
 /*!
  * The ```ladspa``` crate provides an interface for writing [LADSPA](http://www.ladspa.org/)

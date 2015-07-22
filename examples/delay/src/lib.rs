@@ -1,4 +1,4 @@
-#![feature(collections)]
+#![feature(vec_resize)]
 
 extern crate ladspa;
 
