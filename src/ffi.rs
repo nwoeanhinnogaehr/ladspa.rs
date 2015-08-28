@@ -2,7 +2,7 @@ use std::{mem, ptr};
 use libc::{self, c_char};
 use std::slice;
 use std::cell::RefCell;
-use std::collections::VecMap;
+use vec_map::VecMap;
 use std::ffi::CString;
 
 use super::PluginDescriptor;

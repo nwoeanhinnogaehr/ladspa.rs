@@ -11,6 +11,7 @@ keywords = ["audio", "ladspa", "dsp"]
 
 [dependencies]
 bitflags = "*"
+vec_map = "*"
 
 [lib]
 name = "ladspa"

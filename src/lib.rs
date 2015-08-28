@@ -1,4 +1,4 @@
-#![feature(libc, vecmap, cstr_memory)]
+#![feature(libc, cstr_memory)]
 
 /*!
  * The ```ladspa``` crate provides an interface for writing [LADSPA](http://www.ladspa.org/)
@@ -38,6 +38,7 @@
 
 extern crate libc;
 #[macro_use] extern crate bitflags;
+extern crate vec_map;
 
 #[doc(hidden)]
 pub mod ffi;
