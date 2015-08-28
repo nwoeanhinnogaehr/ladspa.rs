@@ -103,11 +103,11 @@ pub unsafe extern "C" fn ladspa_descriptor(index: u64) -> *mut ladspa::Descripto
         Some(plugin) => {
             let desc = mem::transmute(Box::new(ladspa::Descriptor {
                 unique_id: plugin.unique_id,
-                label: CString::new(plugin.label).unwrap().into_ptr(),
+                label: CString::new(plugin.label).unwrap().into_raw(),
                 properties: plugin.properties.bits(),
-                name: CString::new(plugin.name).unwrap().into_ptr(),
-                maker: CString::new(plugin.maker).unwrap().into_ptr(),
-                copyright: CString::new(plugin.copyright).unwrap().into_ptr(),
+                name: CString::new(plugin.name).unwrap().into_raw(),
+                maker: CString::new(plugin.maker).unwrap().into_raw(),
+                copyright: CString::new(plugin.copyright).unwrap().into_raw(),
 
                 port_count: plugin.ports.len() as u64,
                 port_descriptors: mem::transmute::<_, &mut [i32]>(
@@ -116,7 +116,7 @@ pub unsafe extern "C" fn ladspa_descriptor(index: u64) -> *mut ladspa::Descripto
                     ).collect::<Vec<_>>().into_boxed_slice()).as_mut_ptr(),
                 port_names: mem::transmute::<_, &mut [*const c_char]>(
                     plugin.ports.iter().map(|port|
-                        CString::new(port.name).unwrap().into_ptr()
+                        CString::new(port.name).unwrap().into_raw()
                     ).collect::<Vec<_>>().into_boxed_slice()).as_mut_ptr(),
                 port_range_hints: mem::transmute::<_, &mut [ladspa::PortRangeHint]>(
                     plugin.ports.iter().map(|port|
@@ -160,13 +160,13 @@ extern "C" fn global_destruct() {
 }
 
 unsafe fn drop_descriptor(desc: &mut ladspa::Descriptor) {
-    CString::from_ptr(desc.label);
-    CString::from_ptr(desc.name);
-    CString::from_ptr(desc.maker);
-    CString::from_ptr(desc.copyright);
+    CString::from_raw(desc.label);
+    CString::from_raw(desc.name);
+    CString::from_raw(desc.maker);
+    CString::from_raw(desc.copyright);
     Vec::from_raw_parts(desc.port_descriptors, desc.port_count as usize, desc.port_count as usize);
     Vec::from_raw_parts(desc.port_names, desc.port_count as usize, desc.port_count as usize)
-        .iter().map(|&x| CString::from_ptr(x)).collect::<Vec<_>>();
+        .iter().map(|&x| CString::from_raw(x)).collect::<Vec<_>>();
     Vec::from_raw_parts(desc.port_range_hints, desc.port_count as usize, desc.port_count as usize);
     mem::transmute::<_, Box<PluginDescriptor>>(desc.implementation_data);
 }
