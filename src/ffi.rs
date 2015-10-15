@@ -31,14 +31,14 @@ pub mod ladspa {
     #[allow(missing_copy_implementations)] // Remove this for a fun warning/suggestion cycle!
     pub struct Descriptor {
         pub unique_id: u64,
-        pub label: *const c_char,
+        pub label: *mut c_char,
         pub properties: Properties,
-        pub name: *const c_char,
-        pub maker: *const c_char,
-        pub copyright: *const c_char,
+        pub name: *mut c_char,
+        pub maker: *mut c_char,
+        pub copyright: *mut c_char,
         pub port_count: u64,
         pub port_descriptors: *mut PortDescriptor,
-        pub port_names: *mut *const c_char,
+        pub port_names: *mut *mut c_char,
         pub port_range_hints: *mut PortRangeHint,
         pub implementation_data: *mut c_void,
         pub instantiate: extern "C" fn(descriptor: *const Descriptor, sample_rate: u64) -> Handle,
@@ -114,7 +114,7 @@ pub unsafe extern "C" fn ladspa_descriptor(index: u64) -> *mut ladspa::Descripto
                     plugin.ports.iter().map(|port|
                         port.desc as i32
                     ).collect::<Vec<_>>().into_boxed_slice()).as_mut_ptr(),
-                port_names: mem::transmute::<_, &mut [*const c_char]>(
+                port_names: mem::transmute::<_, &mut [*mut c_char]>(
                     plugin.ports.iter().map(|port|
                         CString::new(port.name).unwrap().into_raw()
                     ).collect::<Vec<_>>().into_boxed_slice()).as_mut_ptr(),

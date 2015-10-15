@@ -1,4 +1,4 @@
-pub extern crate ladspa;
+extern crate ladspa;
 
 use ladspa::{Plugin, PluginDescriptor, Port, PortConnection, Data};
 use std::default::Default;
