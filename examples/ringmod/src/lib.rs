@@ -8,7 +8,7 @@ struct RingMod {
     sample_rate: u64,
 }
 
-fn new_ringmod(_: &PluginDescriptor, sample_rate: u64) -> Box<Plugin> {
+fn new_ringmod(_: &PluginDescriptor, sample_rate: u64) -> Box<Plugin + Send> {
     Box::new(RingMod {
         time: 0,
         sample_rate: sample_rate,

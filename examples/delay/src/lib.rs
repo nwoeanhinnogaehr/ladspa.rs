@@ -1,5 +1,3 @@
-#![feature(vec_resize)]
-
 extern crate ladspa;
 
 use ladspa::{PluginDescriptor, PortDescriptor, Port, DefaultValue, Data, Plugin, PortConnection};
@@ -13,7 +11,7 @@ struct Delay {
     buf_idx: usize,
 }
 
-fn new_delay(_: &PluginDescriptor, sample_rate: u64) -> Box<Plugin> {
+fn new_delay(_: &PluginDescriptor, sample_rate: u64) -> Box<Plugin + Send> {
     Box::new(Delay {
         sample_rate: sample_rate as Data,
         buf: Vec::new(),

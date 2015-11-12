@@ -4,9 +4,22 @@ use std::slice;
 use std::cell::RefCell;
 use vec_map::VecMap;
 use std::ffi::CString;
+use std::thread::catch_panic;
 
 use super::PluginDescriptor;
 use super::get_ladspa_descriptor;
+
+macro_rules! call_user_code {
+    ($code:expr, $name:expr) => {
+        match catch_panic(move || $code) {
+            Ok(x) => x,
+            Err(_) => {
+                println!("ladspa.rs: panic in {} suppressed.", $name);
+                None
+            }
+        }
+    }
+}
 
 // essentially ladspa.h API translated to rust.
 pub mod ladspa {
@@ -99,7 +112,9 @@ pub unsafe extern "C" fn ladspa_descriptor(index: u64) -> *mut ladspa::Descripto
         return mem::transmute(&*(*descriptors)[index as usize])
     }
 
-    match get_ladspa_descriptor(index) {
+    let descriptor = call_user_code!(get_ladspa_descriptor(index), "get_ladspa_descriptor");
+
+    match descriptor {
         Some(plugin) => {
             let desc = mem::transmute(Box::new(ladspa::Descriptor {
                 unique_id: plugin.unique_id,
@@ -174,7 +189,7 @@ unsafe fn drop_descriptor(desc: &mut ladspa::Descriptor) {
 // The handle that is given to ladspa.
 struct Handle<'a> {
     descriptor: &'static super::PluginDescriptor,
-    plugin: Box<super::Plugin + 'static>,
+    plugin: Box<super::Plugin + Send + 'static>,
     port_map: VecMap<super::PortConnection<'a>>,
     ports: Vec<&'a super::PortConnection<'a>>,
 }
@@ -184,7 +199,11 @@ extern "C" fn instantiate(descriptor: *const ladspa::Descriptor, sample_rate: u6
         let desc: &mut ladspa::Descriptor = mem::transmute(descriptor);
 
         let rust_desc: &super::PluginDescriptor = mem::transmute(desc.implementation_data);
-        let rust_plugin = (rust_desc.new)(rust_desc, sample_rate);
+        let rust_plugin = match call_user_code!(Some((rust_desc.new)(rust_desc, sample_rate)),
+                                                "PluginDescriptor::run") {
+            Some(plug) => plug,
+            None => return ptr::null_mut(),
+        };
         let port_map: VecMap<super::PortConnection> = VecMap::new();
         let ports: Vec<&super::PortConnection> = Vec::new();
 
@@ -252,20 +271,20 @@ extern "C" fn run(instance: ladspa::Handle, sample_count: u64) {
                 _ => { }
             }
         }
-        handle.plugin.run(sample_count as usize, &handle.ports);
+        call_user_code!(Some(handle.plugin.run(sample_count as usize, &handle.ports)), "Plugin::run");
     }
 }
 
 extern "C" fn activate(instance: ladspa::Handle) {
     unsafe{
         let handle: &mut Handle = mem::transmute(instance);
-        handle.plugin.activate();
+        call_user_code!(Some(handle.plugin.activate()), "Plugin::activate");
     }
 }
 extern "C" fn deactivate(instance: ladspa::Handle) {
     unsafe {
         let handle: &mut Handle = mem::transmute(instance);
-        handle.plugin.deactivate();
+        call_user_code!(Some(handle.plugin.deactivate()), "Plugin::deactivate");
     }
 }
 

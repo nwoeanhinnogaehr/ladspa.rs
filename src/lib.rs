@@ -1,4 +1,4 @@
-#![feature(libc)]
+#![feature(libc, catch_panic)]
 
 /*!
  * The ```ladspa``` crate provides an interface for writing [LADSPA](http://www.ladspa.org/)
@@ -108,7 +108,7 @@ pub struct PluginDescriptor {
     /// than here. This should just return a basic instance, ready to be activated.
     /// If your plugin has no internal state, you may optionally not implement ```Plugin::activate```
     /// and do everything here.
-    pub new: fn(desc: &PluginDescriptor, sample_rate: u64) -> Box<Plugin>,
+    pub new: fn(desc: &PluginDescriptor, sample_rate: u64) -> Box<Plugin + Send>,
 }
 
 #[derive(Copy, Clone, Default)]
@@ -230,6 +230,8 @@ pub enum PortData<'a> {
     ControlInput(&'a Data),
     ControlOutput(RefCell<&'a mut Data>),
 }
+
+unsafe impl<'a> Sync for PortData<'a> { }
 
 impl<'a> PortConnection<'a> {
     /// Returns a slice pointing to the internal data of an audio input port. Panics if this port
