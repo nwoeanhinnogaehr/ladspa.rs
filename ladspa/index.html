@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `ladspa` crate.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, ladspa">
+
+    <title>ladspa - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../main.css">
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'></p><script>window.sidebarCurrent = {name: 'ladspa', ty: 'mod', relpath: '../'};</script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content mod">
+<h1 class='fqn'><span class='in-band'>Crate <a class='mod' href=''>ladspa</a></span><span class='out-of-band'><span id='render-detail'>
+            <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                [<span class='inner'>&#x2212;</span>]
+            </a>
+        </span><a id='src-0' class='srclink' href='../src/ladspa/lib.rs.html#1-338' title='goto source code'>[src]</a></span></h1>
+<div class='docblock'><p>The <code>ladspa</code> crate provides an interface for writing <a href="http://www.ladspa.org/">LADSPA</a>
+plugins safely in Rust.</p>
+
+<h2 id='creating-the-project' class='section-header'><a href='#creating-the-project'>Creating the project</a></h2>
+<p>Run <code>cargo new my_ladspa_plugin</code> to generate a Cargo project for your plugin, then add
+the following to the generated Cargo.toml:</p>
+<pre class='rust rust-example-rendered'>
+[<span class='ident'>dependencies</span>]
+<span class='ident'>ladspa</span> <span class='op'>=</span> <span class='string'>&quot;*&quot;</span>
+
+[<span class='ident'>lib</span>]
+<span class='ident'>name</span> <span class='op'>=</span> <span class='string'>&quot;my_ladspa_plugin&quot;</span>
+<span class='kw'>crate</span><span class='op'>-</span><span class='kw'>type</span> <span class='op'>=</span> [<span class='string'>&quot;dylib&quot;</span>]</pre>
+
+<p>This will pull in the correct dependency and ensure that the library generated when you build
+your plugin is compatible with LADSPA hosts.</p>
+
+<h2 id='writing-the-code' class='section-header'><a href='#writing-the-code'>Writing the code</a></h2>
+<p>You&#39;ll want to implement
+<code>get_ladspa_descriptor</code> in your src/lib.rs. This function is expected to return 1 or more
+<code>PluginDescriptor</code>s describing the plugins exposed by your library. See the documentation
+for <code>get_ladspa_descriptor</code> and the examples
+<a href="https://github.com/nwoeanhinnogaehr/ladspa.rs/tree/master/examples">on Github</a> for more
+information.</p>
+
+<h2 id='testing-it-out' class='section-header'><a href='#testing-it-out'>Testing it out</a></h2>
+<p>There is a list of host software supporting LADSPA on the
+<a href="http://www.ladspa.org/">LADSPA home page</a>. In order for a host to find your plugin, you will
+either need to copy the *.so file from target/ after building to /usr/lib/ladspa/ (on most
+systems, it may be different on your system) or set the enviornment variable <code>LADSPA_PATH</code>
+to equal the directory where you store your plugins.</p>
+</div><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
+<table>
+                    <tr class=' module-item'>
+                        <td><a class='struct' href='struct.ControlHint.html'
+                               title='ladspa::ControlHint'>ControlHint</a></td>
+                        <td class='docblock short'>
+                             <p>Represents the special properties a control port may hold. These are merely hints as to the
+use of the port and may be completely ignored by the host. For audio ports, use <code>CONTROL_HINT_NONE</code>.
+To attach multiple properties, bitwise-or them together.
+See documentation for the constants beginning with HINT_ for the more information.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='struct' href='struct.PluginDescriptor.html'
+                               title='ladspa::PluginDescriptor'>PluginDescriptor</a></td>
+                        <td class='docblock short'>
+                             <p>Describes the properties of a <code>Plugin</code> to be exposed as a LADSPA plugin.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='struct' href='struct.Port.html'
+                               title='ladspa::Port'>Port</a></td>
+                        <td class='docblock short'>
+                             <p>Represents an input or output to the plugin representing either audio or
+control data.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='struct' href='struct.PortConnection.html'
+                               title='ladspa::PortConnection'>PortConnection</a></td>
+                        <td class='docblock short'>
+                             <p>Represents a connection between a port and the data attached to the port by the plugin
+host.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='struct' href='struct.Properties.html'
+                               title='ladspa::Properties'>Properties</a></td>
+                        <td class='docblock short'>
+                             <p>Represents the special properties a LADSPA plugin can have.
+To attach multiple properties, bitwise-or them together, for example
+<code>PROP_REALTIME | PROP_INPLACE_BROKEN</code>.
+See documentation for the constants beginning with PROP_ for the more information.</p>
+
+                        </td>
+                    </tr>
+                </table><h2 id='enums' class='section-header'><a href="#enums">Enums</a></h2>
+<table>
+                    <tr class=' module-item'>
+                        <td><a class='enum' href='enum.DefaultValue.html'
+                               title='ladspa::DefaultValue'>DefaultValue</a></td>
+                        <td class='docblock short'>
+                             <p>The default values that a control port may hold. For audio ports, use DefaultControlValue::None.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='enum' href='enum.PortData.html'
+                               title='ladspa::PortData'>PortData</a></td>
+                        <td class='docblock short'>
+                             <p>Represents the four types of data a port can hold.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='enum' href='enum.PortDescriptor.html'
+                               title='ladspa::PortDescriptor'>PortDescriptor</a></td>
+                        <td class='docblock short'>
+                             <p>Represents the 4 types of ports: audio or control, input or output.</p>
+
+                        </td>
+                    </tr>
+                </table><h2 id='constants' class='section-header'><a href="#constants">Constants</a></h2>
+<table>
+                    <tr class=' module-item'>
+                        <td><a class='constant' href='constant.HINT_INTEGER.html'
+                               title='ladspa::HINT_INTEGER'>HINT_INTEGER</a></td>
+                        <td class='docblock short'>
+                             <p>Indicates that the data passed through this port should be represented as integers. Bounds
+may be interpreted exclusively depending on the host</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='constant' href='constant.HINT_LOGARITHMIC.html'
+                               title='ladspa::HINT_LOGARITHMIC'>HINT_LOGARITHMIC</a></td>
+                        <td class='docblock short'>
+                             <p>Indicates that the data passed through this port would be better represented on a
+logarithmic scale</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='constant' href='constant.HINT_SAMPLE_RATE.html'
+                               title='ladspa::HINT_SAMPLE_RATE'>HINT_SAMPLE_RATE</a></td>
+                        <td class='docblock short'>
+                             <p>Indicates that all values related to the port will be multiplied by the sample rate by
+the host before passing them to your plugin. This includes the lower and upper bounds. If you
+want an upper bound of 22050 with this property and a sample rate of 44100, set the upper bound
+to 0.5</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='constant' href='constant.HINT_TOGGLED.html'
+                               title='ladspa::HINT_TOGGLED'>HINT_TOGGLED</a></td>
+                        <td class='docblock short'>
+                             <p>Indicates that this is a toggled port. Toggled ports may only have default values
+of zero or one, although the host may send any value, where &lt;= 0 is false and &gt; 0 is true.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='constant' href='constant.PROP_HARD_REALTIME_CAPABLE.html'
+                               title='ladspa::PROP_HARD_REALTIME_CAPABLE'>PROP_HARD_REALTIME_CAPABLE</a></td>
+                        <td class='docblock short'>
+                             <p>Indicates that the plugin is capable of running not only in a conventional host but
+also in a &#39;hard real-time&#39; environment. To qualify for this the plugin must
+satisfy all of the following:</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='constant' href='constant.PROP_INPLACE_BROKEN.html'
+                               title='ladspa::PROP_INPLACE_BROKEN'>PROP_INPLACE_BROKEN</a></td>
+                        <td class='docblock short'>
+                             <p>Indicates that the plugin will not function correctly if the input and output audio
+data has the same memory location. This could be an issue if you copy input to output
+then refer back to previous values of the input as they will be overwritten. It is
+recommended that you avoid using this flag if possible as it can decrease the speed of
+the plugin.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='constant' href='constant.PROP_NONE.html'
+                               title='ladspa::PROP_NONE'>PROP_NONE</a></td>
+                        <td class='docblock short'>
+                             <p>No properties.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='constant' href='constant.PROP_REALTIME.html'
+                               title='ladspa::PROP_REALTIME'>PROP_REALTIME</a></td>
+                        <td class='docblock short'>
+                             <p>Indicates that the plugin has a realtime dependency so it&#39;s output may not be cached.</p>
+
+                        </td>
+                    </tr>
+                </table><h2 id='traits' class='section-header'><a href="#traits">Traits</a></h2>
+<table>
+                    <tr class=' module-item'>
+                        <td><a class='trait' href='trait.Plugin.html'
+                               title='ladspa::Plugin'>Plugin</a></td>
+                        <td class='docblock short'>
+                             <p>Represents an instance of a plugin which may be exposed as a LADSPA plugin using
+<code>get_ladspa_descriptor</code>. It is not necessary to implement activate to deactivate.</p>
+
+                        </td>
+                    </tr>
+                </table><h2 id='functions' class='section-header'><a href="#functions">Functions</a></h2>
+<table>
+                    <tr class=' module-item'>
+                        <td><a class='fn' href='fn.get_ladspa_descriptor.html'
+                               title='ladspa::get_ladspa_descriptor'>get_ladspa_descriptor</a></td>
+                        <td class='docblock short'>
+                             <p>Your plugin must implement this function.
+<code>get_ladspa_descriptor</code> returns a description of a supported plugin for a given plugin
+index. When the index is out of bounds for the number of plugins supported by your library,
+you are expected to return <code>None</code>.</p>
+
+                        </td>
+                    </tr>
+                </table><h2 id='types' class='section-header'><a href="#types">Type Definitions</a></h2>
+<table>
+                    <tr class=' module-item'>
+                        <td><a class='type' href='type.Data.html'
+                               title='ladspa::Data'>Data</a></td>
+                        <td class='docblock short'>
+                             <p>The data type used internally by LADSPA for audio and control ports.</p>
+
+                        </td>
+                    </tr>
+                </table></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../";
+        window.currentCrate = "ladspa";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../jquery.js"></script>
+    <script src="../main.js"></script>
+    
+    <script async src="../search-index.js"></script>
+</body>
+</html>
