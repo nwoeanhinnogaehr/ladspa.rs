@@ -4,14 +4,14 @@ use std::slice;
 use std::cell::RefCell;
 use vec_map::VecMap;
 use std::ffi::CString;
-use std::panic::{recover, AssertRecoverSafe};
+use std::panic::{catch_unwind, AssertUnwindSafe};
 
 use super::PluginDescriptor;
 use super::get_ladspa_descriptor;
 
 macro_rules! call_user_code {
     ($code:expr, $name:expr) => {
-        match recover(move || $code) {
+        match catch_unwind(move || $code) {
             Ok(x) => x,
             Err(_) => {
                 println!("ladspa.rs: panic in {} suppressed.", $name);
@@ -285,7 +285,7 @@ extern "C" fn run(instance: ladspa_h::Handle, sample_count: u64) {
                 _ => {}
             }
         }
-        let mut handle = AssertRecoverSafe::new(handle);
+        let mut handle = AssertUnwindSafe(handle);
         call_user_code!(Some({
                             let ref mut handle = *handle;
                             handle.plugin.run(sample_count as usize, &handle.ports)
@@ -297,14 +297,14 @@ extern "C" fn run(instance: ladspa_h::Handle, sample_count: u64) {
 extern "C" fn activate(instance: ladspa_h::Handle) {
     unsafe {
         let handle: &mut Handle = mem::transmute(instance);
-        let mut handle = AssertRecoverSafe::new(handle);
+        let mut handle = AssertUnwindSafe(handle);
         call_user_code!(Some(handle.plugin.activate()), "Plugin::activate");
     }
 }
 extern "C" fn deactivate(instance: ladspa_h::Handle) {
     unsafe {
         let handle: &mut Handle = mem::transmute(instance);
-        let mut handle = AssertRecoverSafe::new(handle);
+        let mut handle = AssertUnwindSafe(handle);
         call_user_code!(Some(handle.plugin.deactivate()), "Plugin::deactivate");
     }
 }
