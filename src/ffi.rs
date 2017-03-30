@@ -90,7 +90,7 @@ pub mod ladspa_h {
     pub const HINT_DEFAULT_440: PortRangeHintDescriptor = 0x2C0;
 }
 
-static mut descriptors: *mut Vec<*mut ladspa_h::Descriptor> =
+static mut DESCRIPTORS: *mut Vec<*mut ladspa_h::Descriptor> =
     0 as *mut Vec<*mut ladspa_h::Descriptor>;
 
 // It seems that ladspa_descriptor is deleted during link time optimization unless we
@@ -103,14 +103,14 @@ unsafe fn _lto_workaround() {
 #[no_mangle]
 // Exported so the plugin is recognised by ladspa hosts.
 pub unsafe extern "C" fn ladspa_descriptor(index: u64) -> *mut ladspa_h::Descriptor {
-    if descriptors == ptr::null_mut() {
+    if DESCRIPTORS == ptr::null_mut() {
         libc::atexit(global_destruct);
-        descriptors = mem::transmute(Box::new(Vec::<*mut ladspa_h::Descriptor>::new()));
+        DESCRIPTORS = mem::transmute(Box::new(Vec::<*mut ladspa_h::Descriptor>::new()));
     }
 
     // If it's already been generated, return the cached copy.
-    if (index as usize) < (*descriptors).len() {
-        return mem::transmute(&*(*descriptors)[index as usize]);
+    if (index as usize) < (*DESCRIPTORS).len() {
+        return mem::transmute(&*(*DESCRIPTORS)[index as usize]);
     }
 
     let descriptor = call_user_code!(get_ladspa_descriptor(index), "get_ladspa_descriptor");
@@ -159,7 +159,7 @@ pub unsafe extern "C" fn ladspa_descriptor(index: u64) -> *mut ladspa_h::Descrip
             }));
 
             // store in global descriptor table
-            (*descriptors).push(desc);
+            (*DESCRIPTORS).push(desc);
             desc
         }
         None => ptr::null_mut(),
@@ -168,7 +168,7 @@ pub unsafe extern "C" fn ladspa_descriptor(index: u64) -> *mut ladspa_h::Descrip
 
 extern "C" fn global_destruct() {
     unsafe {
-        let descs: Box<Vec<*mut ladspa_h::Descriptor>> = mem::transmute(descriptors);
+        let descs: Box<Vec<*mut ladspa_h::Descriptor>> = mem::transmute(DESCRIPTORS);
         for desc in descs.iter() {
             drop_descriptor(mem::transmute(*desc));
         }

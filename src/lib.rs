@@ -1,5 +1,3 @@
-#![feature(libc)]
-
 /*!
  * The ```ladspa``` crate provides an interface for writing [LADSPA](http://www.ladspa.org/)
  * plugins safely in Rust.
