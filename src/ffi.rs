@@ -1,5 +1,5 @@
 use std::{mem, ptr};
-use libc::{self, c_char};
+use libc::{self, c_char, c_ulong};
 use std::slice;
 use std::cell::RefCell;
 use vec_map::VecMap;
@@ -23,12 +23,12 @@ macro_rules! call_user_code {
 
 // essentially ladspa.h API translated to rust.
 pub mod ladspa_h {
-    use libc::{c_void, c_char};
+    use libc::{c_void, c_char, c_int, c_ulong, c_float};
 
-    pub type Data = f32;
-    pub type Properties = i32;
-    pub type PortDescriptor = i32;
-    pub type PortRangeHintDescriptor = i32;
+    pub type Data = c_float;
+    pub type Properties = c_int;
+    pub type PortDescriptor = c_int;
+    pub type PortRangeHintDescriptor = c_int;
 
     pub type Handle = *mut c_void;
 
@@ -43,22 +43,22 @@ pub mod ladspa_h {
     #[repr(C)]
     #[allow(missing_copy_implementations)] // Remove this for a fun warning/suggestion cycle!
     pub struct Descriptor {
-        pub unique_id: u64,
+        pub unique_id: c_ulong,
         pub label: *mut c_char,
         pub properties: Properties,
         pub name: *mut c_char,
         pub maker: *mut c_char,
         pub copyright: *mut c_char,
-        pub port_count: u64,
+        pub port_count: c_ulong,
         pub port_descriptors: *mut PortDescriptor,
         pub port_names: *mut *mut c_char,
         pub port_range_hints: *mut PortRangeHint,
         pub implementation_data: *mut c_void,
-        pub instantiate: extern "C" fn(descriptor: *const Descriptor, sample_rate: u64) -> Handle,
-        pub connect_port: extern "C" fn(instance: Handle, port: u64, data_location: *mut Data),
+        pub instantiate: extern "C" fn(descriptor: *const Descriptor, sample_rate: c_ulong) -> Handle,
+        pub connect_port: extern "C" fn(instance: Handle, port: c_ulong, data_location: *mut Data),
         pub activate: Option<extern "C" fn(instance: Handle)>,
-        pub run: extern "C" fn(instance: Handle, sample_count: u64),
-        pub run_adding: Option<extern "C" fn(instance: Handle, sample_count: u64)>,
+        pub run: extern "C" fn(instance: Handle, sample_count: c_ulong),
+        pub run_adding: Option<extern "C" fn(instance: Handle, sample_count: c_ulong)>,
         pub set_run_adding_gain: Option<extern "C" fn(instance: Handle, gain: Data)>,
         pub deactivate: Option<extern "C" fn(instance: Handle)>,
         pub cleanup: extern "C" fn(instance: Handle),
@@ -102,7 +102,7 @@ unsafe fn _lto_workaround() {
 
 #[no_mangle]
 // Exported so the plugin is recognised by ladspa hosts.
-pub unsafe extern "C" fn ladspa_descriptor(index: u64) -> *mut ladspa_h::Descriptor {
+pub unsafe extern "C" fn ladspa_descriptor(index: c_ulong) -> *mut ladspa_h::Descriptor {
     if DESCRIPTORS == ptr::null_mut() {
         libc::atexit(global_destruct);
         DESCRIPTORS = mem::transmute(Box::new(Vec::<*mut ladspa_h::Descriptor>::new()));
@@ -113,19 +113,19 @@ pub unsafe extern "C" fn ladspa_descriptor(index: u64) -> *mut ladspa_h::Descrip
         return mem::transmute(&*(*DESCRIPTORS)[index as usize]);
     }
 
-    let descriptor = call_user_code!(get_ladspa_descriptor(index), "get_ladspa_descriptor");
+    let descriptor = call_user_code!(get_ladspa_descriptor(index as u64), "get_ladspa_descriptor");
 
     match descriptor {
         Some(plugin) => {
             let desc = mem::transmute(Box::new(ladspa_h::Descriptor {
-                unique_id: plugin.unique_id,
+                unique_id: plugin.unique_id as c_ulong,
                 label: CString::new(plugin.label).unwrap().into_raw(),
                 properties: plugin.properties.bits(),
                 name: CString::new(plugin.name).unwrap().into_raw(),
                 maker: CString::new(plugin.maker).unwrap().into_raw(),
                 copyright: CString::new(plugin.copyright).unwrap().into_raw(),
 
-                port_count: plugin.ports.len() as u64,
+                port_count: plugin.ports.len() as c_ulong,
                 port_descriptors: mem::transmute::<_, &mut [i32]>(
                     plugin.ports.iter().map(|port|
                                             port.desc as i32
@@ -204,13 +204,13 @@ struct Handle<'a> {
 }
 
 extern "C" fn instantiate(descriptor: *const ladspa_h::Descriptor,
-                          sample_rate: u64)
+                          sample_rate: c_ulong)
                           -> ladspa_h::Handle {
     unsafe {
         let desc: &mut ladspa_h::Descriptor = mem::transmute(descriptor);
 
         let rust_desc: &super::PluginDescriptor = mem::transmute(desc.implementation_data);
-        let rust_plugin = match call_user_code!(Some((rust_desc.new)(rust_desc, sample_rate)),
+        let rust_plugin = match call_user_code!(Some((rust_desc.new)(rust_desc, sample_rate as u64)),
                                                 "PluginDescriptor::run") {
             Some(plug) => plug,
             None => return ptr::null_mut(),
@@ -228,7 +228,7 @@ extern "C" fn instantiate(descriptor: *const ladspa_h::Descriptor,
 }
 
 extern "C" fn connect_port(instance: ladspa_h::Handle,
-                           port_num: u64,
+                           port_num: c_ulong,
                            data_location: *mut ladspa_h::Data) {
     unsafe {
         let handle: &mut Handle = mem::transmute(instance);
@@ -269,7 +269,7 @@ extern "C" fn connect_port(instance: ladspa_h::Handle,
     }
 }
 
-extern "C" fn run(instance: ladspa_h::Handle, sample_count: u64) {
+extern "C" fn run(instance: ladspa_h::Handle, sample_count: c_ulong) {
     unsafe {
         let handle: &mut Handle = mem::transmute(instance);
         for (_, port) in handle.port_map.iter_mut() {
@@ -309,7 +309,7 @@ extern "C" fn deactivate(instance: ladspa_h::Handle) {
     }
 }
 
-// extern "C" fn run_adding(instance: ladspa_h::Handle, sample_count: u64) {
+// extern "C" fn run_adding(instance: ladspa_h::Handle, sample_count: c_ulong) {
 // }
 // extern "C" fn set_run_adding_gain(instance: ladspa_h::Handle, gain: ladspa_h::Data) {
 // }
